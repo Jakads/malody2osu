@@ -1,5 +1,13 @@
 import os, json, sys, time, zipfile
 
+print("Malody to osu!mania v1.0")
+print("October 14th, 2019")
+print("by Jakads\n")
+
+if len(sys.argv)<1:
+    print("Drag .mc files into this program to convert them to .osu or .osz!")
+    time.sleep(5)
+    exit()
 arg = [x for x in sys.argv if os.path.splitext(x)[1] == ".mc"]
 
 try:
