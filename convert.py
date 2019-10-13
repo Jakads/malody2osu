@@ -1,81 +1,97 @@
 import os, json, sys, time, zipfile
 
-print("Malody to osu!mania v1.0")
-print("October 14th, 2019")
-print("by Jakads\n")
+basedir = os.getcwd()
 
-if len(sys.argv)<1:
+print("Malody to osu!mania Converter v1.0")
+print("October 14th, 2019")
+print("by Jakads\n\n")
+
+if len(sys.argv)<=1:
     print("Drag .mc files into this program to convert them to .osu or .osz!")
-    time.sleep(5)
+    time.sleep(7)
     exit()
 arg = [x for x in sys.argv if os.path.splitext(x)[1] == ".mc"]
 
 try:
     os.chdir(os.path.split(arg[0])[0])
 except:
-    print("Only accepts .mc")
-    time.sleep(5)
+    print("FILEERROR: This program only accepts .mc files.")
+    time.sleep(7)
     exit()
 
 Key = True
+MultiBPM = False
 name = []
+keyname = []
+bpmname = []
 
 for i in arg:
     name.append(os.path.split(i)[1])
 
-title = artist = background = sound = ""
+title = ""
+artist = ""
+bglist = set()
+soundlist = set()
 
 #Converting to osu
+print("Converting . . .\n")
 for i in name:
     with open(f'{i}',encoding='utf-8') as mc:
         mcFile = json.loads(mc.read())
 
-    if not (mcFile['meta']['mode'] == 0):
+    if not mcFile['meta']['mode'] == 0:
         Key = False
-        print(f"{i} is not a Key difficulty")
+        print(f"KEYERROR: {i} is not a Key difficulty.")
 
-    if not Key:
+    else:
+        keyname.append(i)
+        meta = mcFile['meta']
+        line = mcFile['time']
+        note = mcFile['note']
+
+        keys = meta["mode_ext"]["column"]
+        bpm = int(line[0]["bpm"])
+
+        #이거 예외 확인 좀 더 효율적으로 하는 법 아시는 분 Jakads#0133 디코
+        try:
+            offset = -int(note[-1]["offset"])
+        except:
+            offset = 0
+
+        try:
+            preview = meta["preview"]
+        except:
+            preview = -1
+
+        try:
+            titleorg = meta["song"]["titleorg"]
+        except:
+            titleorg = meta["song"]["title"]
+
+        try:
+            artistorg = meta["song"]["artistorg"]
+        except:
+            artistorg = meta["song"]["artist"]
+
+        if not meta["song"]["title"]=="": title = meta["song"]["title"]
+        if not meta["song"]["artist"]=="": artist = meta["song"]["artist"]
+        background = meta["background"]
+        if not background=="": bglist.add(background)
+        sound = note[-1]["sound"]
+        if not sound=="": soundlist.add(sound)
+        creator = meta["creator"]
+        version = meta["version"]
+
+        lineset = set()
+        for x in line:
+            lineset.add(x["bpm"])
+        if len(lineset)>1:
+            bpmname.append(i)
+            MultiBPM = True
+            print(f"BPMERROR: {i} contains one or more BPM changes.")
+
+    if not Key or MultiBPM:
         continue
-
-    meta = mcFile['meta']
-    line = mcFile['time']
-    note = mcFile['note']
-
-    keys = meta["mode_ext"]["column"]
-    bpm = int(line[0]["bpm"])
-
-    #이거 예외 확인 좀 더 효율적으로 하는 법 아시는 분 Jakads#0133 디코
-    try:
-        offset = -int(note[-1]["offset"])
-    except:
-        offset = 0
-
-    try:
-        preview = meta["preview"]
-    except:
-        preview = -1
-
-    try:
-        titleorg = meta["song"]["titleorg"]
-    except:
-        titleorg = meta["song"]["title"]
-
-    try:
-        artistorg = meta["song"]["artistorg"]
-    except:
-        artistorg = meta["song"]["artist"]
-
-    title = meta["song"]["title"]
-    artist = meta["song"]["artist"]
-    background = meta["background"]
-    sound = note[-1]["sound"]
-    creator = meta["creator"]
-    version = meta["version"]
-
-    if(len(line)>1):
-        print("Doesn't support diffs with multiple BPMs")
-        time.sleep(5)
-        exit()
 
     def ms(beats): #[beats, n, divide]
         return int(1000*(60/bpm)*(beats[0]+beats[1]/beats[2]))+offset
@@ -83,7 +99,7 @@ for i in name:
     def col(column):
         return int(512*(2*column+1)/(2*keys))
 
-    with open(f'{i}.osu',mode='at',encoding='utf-8') as osu:
+    with open(f'{basedir}\\{i}.osu',mode='at',encoding='utf-8') as osu:
         osuformat = ['osu file format v14',
                      '',
                      '[General]',
@@ -136,41 +152,56 @@ for i in name:
         #https://thrillfighter.tistory.com/310
 
         for n in note[:-1]:
-            if(ms(n["beat"])+offset>=0):
-                if(len(n)==2):  #Regular Note
+            if ms(n["beat"])+offset >= 0:
+                if len(n) == 2:  #Regular Note
                     osu.write(f'{col(n["column"])},192,{ms(n["beat"])},1,0\n')
                 else:           #Long Note
                     osu.write(f'{col(n["column"])},192,{ms(n["beat"])},128,0,{ms(n["endbeat"])}\n')
 
-    print(f'{i}.osu converted successfully.')
+    print(f'Converted: {i}')
 
-if not Key:
+if not Key or MultiBPM:
+    if not Key:
+        print("\nThis program does not support any modes other than Key. Please drag the Key mode difficulties only.\nThe following files are in Key mode:")
+        if len(keyname)==0: print("None of the files you've dragged are in Key mode.")
+        else:
+            for i in keyname:
+                print(i)
+
+    if MultiBPM:
+        print("\nThis program does not support difficulties with multiple BPMs yet. Sorry for the inconvenience.\nThe following files contain one or more BPM changes:")
+        for i in bpmname:
+            print(i)
+
     for i in name:
         try:
-            os.remove(f'{i}.osu')
+            os.remove(f'{basedir}\\{i}.osu')
         except:
             pass
-    time.sleep(5)
+    time.sleep(7)
     exit()
 
-print('\nPress Enter to compress the files into .osz . . .')
+print('\nAll .mc files has been converted to .osu!\nEither close the program now and move the files manually,\nor press Enter to compress all into .osz.')
 input()
 
 #Compress to .osz
-print('\nCompressing...')
+print('\nCompressing . . .\n')
 
-osz = zipfile.ZipFile(f'{artist} - {title}.osz','w')
+osz = zipfile.ZipFile(f'{basedir}\\{artist} - {title}.osz','w')
 
 for i in name:
-    osz.write(f'{i}.osu')
-    os.remove(f'{i}.osu')
-    print(f'{i}.osu Compressed Successfully.')
-if not (background==""):
-    osz.write(f'{background}')
-    print(f'{background} Compressed Successfully.')
-osz.write(f'{sound}')
-print(f'{sound} Compressed Successfully.\n')
+    osz.write(f'{basedir}\\{i}.osu')
+    os.remove(f'{basedir}\\{i}.osu')
+    print(f'Compressed: {i}.osu')
+if not len(bglist)==0:
+    for i in bglist:
+        osz.write(f'{i}')
+        print(f'Compressed: {i}')
+if not len(soundlist)==0:
+    for i in soundlist:
+        osz.write(f'{sound}')
+        print(f'Compressed: {sound}\n')
 osz.close()
 
-print(f'{artist} - {title}.osz has been created.\nRun the file to add the maps to osu! automatically.')
-time.sleep(5)
+print(f'{artist} - {title}.osz has been created!\nRun the file to add the maps to osu! automatically.')
+time.sleep(7)
