@@ -12,6 +12,13 @@ Supports all keys (4K~9K)
 * Doesn't support .mcz files yet. Extract it first by dragging into Malody.
 * **Only supports charts with no BPM changes for the time being.** Should really work on that.
 * Doesn't support custom hitsounds and SVs yet.
+# Screenshots
+Failed due to FILEERROR
+![FILEERROR](img/FILEERROR.png)
+Failed due to KEYERROR and BPMERROR
+![KEYERROR_BPMERROR](img/KEYERROR_BPMERROR.png)
+Successfully converted then compressed
+![Success](img/Success.png)
 # TODO
 * Support .mcz files
 * Support multiple BPMs
