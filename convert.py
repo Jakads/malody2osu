@@ -181,7 +181,7 @@ if not Key or MultiBPM:
     time.sleep(7)
     exit()
 
-print('\nAll .mc files has been converted to .osu!\nEither close the program now and move the files manually,\nor press Enter to compress all into .osz.')
+print('\nAll .mc files have been converted to .osu!\nEither close the program now and move the files manually,\nor press Enter to compress all into .osz.')
 input()
 
 #Compress to .osz
