@@ -7,6 +7,7 @@ print("by Jakads\n\n")
 version = "1.1"
 
 print("(i) Checking for updates. . .")
+Update = False
 try:
     response = requests.get('https://raw.githubusercontent.com/jakads/Malody-to-Osumania/master/version.txt')
     print(f"(i) Latest Version = v{response.text}")
@@ -16,10 +17,12 @@ try:
         webbrowser.open('https://github.com/jakads/Malody-to-Osumania/releases')
         print("(i) Press any key to turn off the program.")
         msvcrt.getch()
+        Update = True
         exit()
 
     print("\n(i) Your program is as good as new! We're good to go.\n\n")
 except:
+    if Update: exit()
     print("(i) Latest Version = v???\n[!] Connection to GitHub failed. Will just continue...\n\n")
 
 def recursive_file_gen(mydir):
