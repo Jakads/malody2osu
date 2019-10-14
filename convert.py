@@ -1,9 +1,23 @@
-import os, json, sys, time, zipfile, shutil, msvcrt
+import os, json, sys, time, zipfile, shutil, msvcrt, requests, webbrowser
 
 print("Malody to osu!mania Converter v1.1")
 print("October 15th, 2019")
 print("by Jakads\n\n")
 
+version = "1.1"
+
+print("(i) Checking for updates. . .")
+response = requests.get('https://raw.githubusercontent.com/jakads/Malody-to-Osumania/master/version.txt')
+print(f"(i) Latest Version = v{response.text}")
+
+if response.text != version:
+    print("\n[!] New update is available! A browser will be opened for you. Please download the latest version.")
+    webbrowser.open('https://github.com/jakads/Malody-to-Osumania/releases')
+    print("(i) Press any key to turn off the program.")
+    msvcrt.getch()
+    exit()
+
+print("\n(i) Your program is as good as new! We're good to go.\n\n")
 def recursive_file_gen(mydir):
     for root, dirs, files in os.walk(mydir):
         for file in files:
