@@ -6,35 +6,77 @@ from shutil import rmtree
 from msvcrt import getch
 import requests
 import webbrowser
+from tqdm import tqdm
+import string
+import random
 
-print("Malody to osu!mania Converter v1.1")
-print("October 15th, 2019")
+if getattr(sys, 'frozen', False):
+    os.chdir(os.path.split(sys.executable)[0])
+    #https://codeday.me/ko/qa/20190316/78831.html
+
+print("Malody to osu!mania Converter v1.2")
+print("October 16th, 2019")
 print("by Jakads\n\n")
 
-version = "1.1"
+version = "1.2"
+
+if '--:update' in sys.argv: #added ":" to disallow user to view this message by dragging in files
+    print(f"[O] ㄴuccessfully updated to v{version}! :D\n\n")
+    sys.argv.remove('--:update')
 
 print("(i) Checking for updates . . .")
 try:
-    response = requests.get('https://raw.githubusercontent.com/jakads/Malody-to-Osumania/master/version.txt')
-    print(f"(i) Latest Version = v{response.text}")
+    latest = requests.get('https://github.com/jakads/Malody-to-Osumania/raw/master/version.txt')
+    latest.raise_for_status()
+    print(f"\n(i) Latest Version = v{latest.text}")
 
-    if response.text != version:
-        print("\n[!] New update is available! A browser will be opened for you. Please download the latest version.")
-        webbrowser.open('https://github.com/jakads/Malody-to-Osumania/releases')
-        print("(i) Press any key to turn off the program.")
-        getch()
-        sys.exit()
+    if latest.text != version:
+        print("\n[!] New update is available! Would you like to download? (Y/N)")
+        choice = getch()
+        while choice != (b'y' or b'Y' or b'n' or b'N'):
+            choice = getch()
+        
+        if choice == (b'n' or b'N'):
+            print("(i) Skipping the update.")
 
-    print("\n(i) Your program is as good as new! We're good to go.\n\n")
-except:
-    print("(i) Latest Version = v???\n[!] Connection to GitHub failed. Will just continue...\n\n")
+        else:
+            print("(i) Downloading . . .")
+            exe = requests.get("https://github.com/jakads/Malody-to-Osumania/raw/master/convert.exe", stream=True)
+            exe.raise_for_status()
+            total = int(exe.headers.get('content-length'))
+            progress = tqdm(total=total, unit='B', unit_scale=True, unit_divisor=1024, ncols=80) #https://github.com/tqdm/tqdm/wiki/How-to-make-a-great-Progress-Bar
+            rand=''.join(random.choice(string.ascii_letters + string.digits) for i in range(16)) #https://pynative.com/python-generate-random-string/
+            filename=os.path.split(sys.executable)[1]
+            with open(f"{rand}.exe", 'wb') as f: #https://stackoverflow.com/questions/37573483
+                for chunk in exe.iter_content(chunk_size=4096):
+                    if chunk:
+                        progress.update(4096)
+                        f.write(chunk)
+            with open(f'{rand}.bat', 'w') as f:
+                f.write('\n'.join(['@echo off',
+                                   'echo (i) Restarting . . .',
+                                   "echo (i) All the files you've dragged in will be converted very soon!",
+                                   'timeout /t 5 /nobreak >nul',
+                                   f'del {filename}',
+                                   f'rename {rand}.exe {filename}',
+                                   f'start {filename} --:update {" ".join(sys.argv[1:]) if len(sys.argv)>1 else ""}',
+                                   f'del {rand}.bat']))
+            os.startfile(f'{rand}.bat')
+            sys.exit()
+            #webbrowser.open('https://github.com/jakads/Malody-to-Osumania#changelog')
 
+    else:
+        print("\n(i) Your program is as good as new! We're good to go.\n\n")
+except Exception as e:
+    print(e)
+    print("\n[!] Connection to GitHub failed. Will just continue...\n\n")
+    
 def recursive_file_gen(mydir):
     for root, dirs, files in os.walk(mydir):
         for file in files:
             yield os.path.join(root, file)
             #https://stackoverflow.com/questions/2865278
-            
+
 def convert(i, bgtmp, soundtmp):
     try:
         with open(f'{i}',encoding='utf-8') as mc:
