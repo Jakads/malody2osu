@@ -16,7 +16,7 @@ Supports all keys (4K~9K)
 * Support folders
 * **Support multiple BPMs**
 * Support custom hitsounds and SVs...? are they even used
-# Version
+# Changelog
 ## v1.1
 * Automatically ignores unsupported files
 * Supports .mcz/.zip files
