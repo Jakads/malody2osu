@@ -89,19 +89,8 @@ def convert(i, bgtmp, soundtmp):
     if not mcFile['meta']['mode'] == 0:
         print(f"[!] KeyWarning: {os.path.split(i)[1]} is not a Key difficulty. Ignoring...")
         return 1
-
-    else:
-        line = mcFile['time']
-
-        lineset = set()
-        for x in line:
-            lineset.add(x["bpm"])
-        if len(lineset)>1:
-            bpmname.append(os.path.split(i)[1])
-            print(f"[!] BPMWarning: {os.path.split(i)[1]} contains one or more BPM changes. Ignoring...")
-            MultiBPM = True
-            return 1
-
+        
+    line = mcFile['time']
     meta = mcFile['meta']
     note = mcFile['note']
 
@@ -235,7 +224,6 @@ ZIPDragged = False
 MultiBPM = False
 mcname = []
 zipname = []
-bpmname = []
 foldername = []
 oszname = []
 
@@ -316,11 +304,6 @@ if ZIPDragged:
             bglist.append(bgtmp)
             soundlist.append(soundtmp)
             mcname.append(mctmp)
-
-if MultiBPM:
-    print("\n(i) This program does not support difficulties with multiple BPMs yet, thus the following files has not been converted.\n(i) Sorry for the inconvenience, and please try again in the future updates.")
-    for i in bpmname:
-        print(f'* {i}')
 
 if not MCValid:
     print("\n[X] FILEERROR: None of the files you've dragged are supported.")
