@@ -68,7 +68,7 @@ try:
     else:
         print("\n(i) Your program is as good as new! We're good to go.\n\n")
 except Exception as e:
-    print(e)
+    print("\n[!] Fatal Error while connecting:", e)
     print("\n[!] Connection to GitHub failed. Will just continue...\n\n")
     
 def recursive_file_gen(mydir):
