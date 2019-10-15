@@ -24,7 +24,7 @@ Supports all keys (4K~9K)
 * Better wording (Press any key to turn off the program. → Press any key to exit.)
 * Opens this page(changelog) after finishing update
 * Bug fixes
-    * #3 - Unable to deny the update
+    * [#3](https://github.com/jakads/Malody-to-Osumania/issues/3) - Unable to deny the update
 ## v1.2
 * **Downloads new .exe automatically and then replaces the current one after detecting available update**
 * Bug fixes
