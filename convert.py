@@ -10,21 +10,35 @@ from tqdm import tqdm
 import string
 import random
 
+version = "1.2.1"
+date = "October 16th, 2019"
+
 if getattr(sys, 'frozen', False):
     os.chdir(os.path.split(sys.executable)[0])
     #https://codeday.me/ko/qa/20190316/78831.html
 
-print("Malody to osu!mania Converter v1.2.1")
-print("October 16th, 2019")
+print(f"Malody to osu!mania Converter v{version}")
+print(date)
 print("by Jakads\n\n")
 
-version = "1.2.1"
+def choose():
+    choice = getch().decode()
+    while choice not in 'yYnN':
+        choice = getch().decode()
+    
+    if choice in 'nN':
+        return 0
+    
+    else:
+        return 1
 
 if '--:update' in sys.argv: #added ":" to disallow user to view this message by dragging in files
-    print(f"[O] Successfully updated to v{version}! :D\n\n")
+    print(f"[O] Successfully updated to v{version}! :D\n[!] Would you like to check out the changelog? (Y/N)\n")
+    if choose():
+        webbrowser.open('https://github.com/jakads/Malody-to-Osumania#changelog')
     sys.argv.remove('--:update')
 
-print("(i) Checking for updates . . .")
+print("(i) Checking new updates . . .")
 try:
     latest = requests.get('https://github.com/jakads/Malody-to-Osumania/raw/master/version.txt')
     latest.raise_for_status()
@@ -32,12 +46,8 @@ try:
 
     if latest.text != version:
         print("\n[!] New update is available! Would you like to download? (Y/N)")
-        choice = getch().decode()
-        while choice not in 'yYnN':
-            choice = getch().decode()
-        
-        if choice in 'nN':
-            print("(i) Skipping the update.")
+        if not choose():
+            print("(i) Skipping the update.\n\n")
 
         else:
             print("(i) Downloading . . .")
@@ -63,8 +73,7 @@ try:
                                    f'del {rand}.bat']))
             os.startfile(f'{rand}.bat')
             sys.exit()
-            #webbrowser.open('https://github.com/jakads/Malody-to-Osumania#changelog')
-
+            
     else:
         print("\n[O] Your program is as good as new! We're good to go.\n\n")
 except Exception as e:

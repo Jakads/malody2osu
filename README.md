@@ -19,16 +19,22 @@ Supports all keys (4K~9K)
 * Various color output using Colorama
 * More user-friendly GUI using Tkinter... maybe?
 # Changelog
+### v1.2.1
+* This update partially is to check if the auto-download feature implemented in v1.2 works as intended.
+* Better wording (Press any key to turn off the program. → Press any key to exit.)
+* Opens this page(changelog) after finishing update
+* Bug fixes
+    * #3 - Unable to deny the update
 ## v1.2
-* Downloads new .exe automatically and then replaces the current one after detecting available update
+* **Downloads new .exe automatically and then replaces the current one after detecting available update**
 * Bug fixes
     * Can't detect files with uppercase extensions (e.g. '.MC', '.MCZ', '.ZIP')
 ## v1.1
-* Automatically ignores unsupported files
-* Supports .mcz/.zip files
+* **Automatically ignores unsupported files**
+* **Supports .mcz/.zip files**
+* **Supports multiple BG/Audio files**
 * Waits until user's keyboard input using msvcrt.getch() instead of waiting 7 seconds using time.sleep(7)
 * Auto-Update feature ~~(temporary, might make it optional or create a seperate Update.exe program)~~\
 Made it optional
-* Supports multiple BG/Audio files
 ## v1.0
-* Initial Release
+* **Initial Release**
