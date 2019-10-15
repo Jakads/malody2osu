@@ -21,7 +21,7 @@ print("by Jakads\n\n")
 version = "1.2"
 
 if '--:update' in sys.argv: #added ":" to disallow user to view this message by dragging in files
-    print(f"[O] ㄴuccessfully updated to v{version}! :D\n\n")
+    print(f"[O] Successfully updated to v{version}! :D\n\n")
     sys.argv.remove('--:update')
 
 print("(i) Checking for updates . . .")
@@ -246,11 +246,11 @@ for x in sys.argv[1:]:
         print(f"[!] FileWarning: {os.path.split(x)[1]} is a directory, not a file. Ignoring...")
     elif not os.path.isfile(x):
         print(f"[!] FileWarning: {os.path.split(x)[1]} does not exist. I recommend dragging the file into the program, not with a command prompt. Ignoring...")
-    elif os.path.splitext(x)[1] == ".mc":
+    elif os.path.splitext(x)[1].lower() == ".mc":
         mctmp.append(x)
         MCDragged = True
-    elif os.path.splitext(x)[1] == (".mcz" or ".zip"):
-        if os.path.splitext(x)[1] == ".mcz":
+    elif os.path.splitext(x)[1].lower() == (".mcz" or ".zip"):
+        if os.path.splitext(x)[1].lower() == ".mcz":
             isMCZ = True
             os.rename(x, f'{os.path.splitext(x)[0]}.zip')
             x = f'{os.path.splitext(x)[0]}.zip'
