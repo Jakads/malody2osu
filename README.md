@@ -15,12 +15,20 @@ Supports all keys (4K~9K)
 # TODO
 * Support folders
 * **Support multiple BPMs**
-* Support custom hitsounds and SVs...? are they even used
+* Support custom hitsounds and SVs
+* Various color output using Colorama
+* More user-friendly GUI using Tkinter... maybe?
 # Changelog
+## v1.2
+* Downloads new .exe automatically and then replaces the current one after detecting available update
+* Bug fixes
+    * Can't detect files with uppercase extensions (e.g. '.MC', '.MCZ', '.ZIP')
 ## v1.1
 * Automatically ignores unsupported files
 * Supports .mcz/.zip files
-* Waits until user's input instead of waiting 7 seconds
-* Auto-Update feature (temporary, might make it optional or create a seperate Update.exe program)
+* Waits until user's keyboard input using msvcrt.getch() instead of waiting 7 seconds using time.sleep(7)
+* Auto-Update feature ~~(temporary, might make it optional or create a seperate Update.exe program)~~\
+Made it optional
+* Supports multiple BG/Audio files
 ## v1.0
 * Initial Release
