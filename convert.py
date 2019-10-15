@@ -14,11 +14,11 @@ if getattr(sys, 'frozen', False):
     os.chdir(os.path.split(sys.executable)[0])
     #https://codeday.me/ko/qa/20190316/78831.html
 
-print("Malody to osu!mania Converter v1.2")
+print("Malody to osu!mania Converter v1.2.1")
 print("October 16th, 2019")
 print("by Jakads\n\n")
 
-version = "1.2"
+version = "1.2.1"
 
 if '--:update' in sys.argv: #added ":" to disallow user to view this message by dragging in files
     print(f"[O] Successfully updated to v{version}! :D\n\n")
@@ -32,11 +32,11 @@ try:
 
     if latest.text != version:
         print("\n[!] New update is available! Would you like to download? (Y/N)")
-        choice = getch()
-        while choice != (b'y' or b'Y' or b'n' or b'N'):
-            choice = getch()
+        choice = getch().decode()
+        while choice not in 'yYnN':
+            choice = getch().decode()
         
-        if choice == (b'n' or b'N'):
+        if choice in 'nN':
             print("(i) Skipping the update.")
 
         else:
@@ -66,7 +66,7 @@ try:
             #webbrowser.open('https://github.com/jakads/Malody-to-Osumania#changelog')
 
     else:
-        print("\n(i) Your program is as good as new! We're good to go.\n\n")
+        print("\n[O] Your program is as good as new! We're good to go.\n\n")
 except Exception as e:
     print("\n[!] Fatal Error while connecting:", e)
     print("\n[!] Connection to GitHub failed. Will just continue...\n\n")
