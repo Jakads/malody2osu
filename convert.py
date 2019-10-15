@@ -1,4 +1,11 @@
-import os, json, sys, time, zipfile, shutil, msvcrt, requests, webbrowser
+import os
+import json
+from sys import argv
+import zipfile
+from shutil import rmtree
+from msvcrt import getch
+import requests
+import webbrowser
 
 print("Malody to osu!mania Converter v1.1")
 print("October 15th, 2019")
@@ -16,7 +23,7 @@ try:
         print("\n[!] New update is available! A browser will be opened for you. Please download the latest version.")
         webbrowser.open('https://github.com/jakads/Malody-to-Osumania/releases')
         print("(i) Press any key to turn off the program.")
-        msvcrt.getch()
+        getch()
         Update = True
         exit()
 
@@ -176,10 +183,10 @@ def compress(compressname, name, bglist, soundlist):
     osz.close()
     oszname.append(f'{compressname}.osz')
 
-if len(sys.argv)<=1:
+if len(argv)<=1:
     print("(i) Drag .mc or .mcz/.zip files into this program to convert them to .osu or .osz!")
     print("(i) Press any key to turn off the program.")
-    msvcrt.getch()
+    getch()
     exit()
 
 MCDragged = False
@@ -193,7 +200,7 @@ foldername = []
 oszname = []
 
 mctmp = []
-for x in sys.argv[1:]:
+for x in argv[1:]:
     isMCZ = False
     if os.path.isdir(x):
         print(f"[!] FileWarning: {os.path.split(x)[1]} is a directory, not a file. Ignoring...")
@@ -222,7 +229,7 @@ if MCDragged:
 if not MCDragged and not ZIPDragged:
     print("\n[X] FILEERROR: None of the files you've dragged in are supported. This program only accepts .mc, .mcz, or .zip files.")
     print("(i) Press any key to turn off the program.")
-    msvcrt.getch()
+    getch()
     exit()
 
 title = ""
@@ -278,11 +285,11 @@ if MultiBPM:
 if not MCValid:
     print("\n[X] FILEERROR: None of the files you've dragged are supported.")
     print("(i) Press any key to turn off the program.")
-    msvcrt.getch()
+    getch()
     exit()
 
 print('\n\n(i) All the supported .mc files have been converted to .osu!\n(i) Either close the program now and move the files manually,\n(i) or press Enter to compress all into .osz.')
-msvcrt.getch()
+getch()
 
 print('\n(i) Compressing . . .\n')
 #Compress to .osz (dragged .mc files as single mapset)
@@ -295,10 +302,10 @@ if ZIPDragged:
         print(f'\n(i) Compressing {os.path.split(folder)[1]}. . .\n')
         compress(f'{os.path.split(folder)[1]}', mcname[i], set(bglist[i]), set(soundlist[i]))
         i+=1
-        shutil.rmtree(folder)
+        rmtree(folder)
 
 print('\n(i) The following .osz files have been created! Run the files to add the maps to osu! automatically.\n')
 for i in oszname:
     print(f'* {i}')
 print('\n(i) Press any key to turn off the program.')
-msvcrt.getch()
+getch()
