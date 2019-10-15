@@ -225,7 +225,7 @@ def compress(compressname, name, bglist, soundlist):
 
 if len(sys.argv)<=1:
     print("(i) Drag .mc or .mcz/.zip files into this program to convert them to .osu or .osz!")
-    print("(i) Press any key to turn off the program.")
+    print("(i) Press any key to exit.")
     getch()
     sys.exit()
 
@@ -268,7 +268,7 @@ if MCDragged:
 
 if not MCDragged and not ZIPDragged:
     print("\n[X] FILEERROR: None of the files you've dragged in are supported. This program only accepts .mc, .mcz, or .zip files.")
-    print("(i) Press any key to turn off the program.")
+    print("(i) Press any key to exit.")
     getch()
     sys.exit()
 
@@ -324,7 +324,7 @@ if MultiBPM:
 
 if not MCValid:
     print("\n[X] FILEERROR: None of the files you've dragged are supported.")
-    print("(i) Press any key to turn off the program.")
+    print("(i) Press any key to exit.")
     getch()
     sys.exit()
 
@@ -347,5 +347,5 @@ if ZIPDragged:
 print('\n(i) The following .osz files have been created! Run the files to add the maps to osu! automatically.\n')
 for i in oszname:
     print(f'* {i}')
-print('\n(i) Press any key to turn off the program.')
+print('\n(i) Press any key to exit.')
 getch()
