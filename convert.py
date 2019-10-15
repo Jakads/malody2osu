@@ -13,7 +13,7 @@ print("by Jakads\n\n")
 
 version = "1.1"
 
-print("(i) Checking for updates. . .")
+print("(i) Checking for updates . . .")
 Update = False
 try:
     response = requests.get('https://raw.githubusercontent.com/jakads/Malody-to-Osumania/master/version.txt')
@@ -239,7 +239,7 @@ mcartist = ""
 bglist = []
 soundlist = []
 
-print("\n\n(i) Converting. . .\n")
+print("\n\n(i) Converting . . .\n")
 
 #Converting to .osu (dragged .mc files)
 if MCDragged:
@@ -258,7 +258,7 @@ if MCDragged:
 #Converting to .osu (dragged .mcz/.zip files)
 if ZIPDragged:
     for folder in zipname:
-        print(f'\n(i) Converting {os.path.split(folder)[1]}. . .\n')
+        print(f'\n(i) Converting {os.path.split(folder)[1]} . . .\n')
         c=0
         bgtmp = []
         soundtmp = []
@@ -291,7 +291,7 @@ if not MCValid:
 print('\n\n(i) All the supported .mc files have been converted to .osu!\n(i) Either close the program now and move the files manually,\n(i) or press Enter to compress all into .osz.')
 getch()
 
-print('\n(i) Compressing . . .\n')
+print('\n(i) Compressing  . . .\n')
 #Compress to .osz (dragged .mc files as single mapset)
 if MCDragged:
     compress(f'{mcartist} - {mctitle}', mcname[0], set(bglist[0]), set(soundlist[0]))
@@ -299,7 +299,7 @@ if MCDragged:
 if ZIPDragged:
     i = 1 if MCDragged else 0
     for folder in zipname:
-        print(f'\n(i) Compressing {os.path.split(folder)[1]}. . .\n')
+        print(f'\n(i) Compressing {os.path.split(folder)[1]} . . .\n')
         compress(f'{os.path.split(folder)[1]}', mcname[i], set(bglist[i]), set(soundlist[i]))
         i+=1
         rmtree(folder)
