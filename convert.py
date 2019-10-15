@@ -1,6 +1,6 @@
 import os
 import json
-from sys import argv
+import sys
 import zipfile
 from shutil import rmtree
 from msvcrt import getch
@@ -14,7 +14,6 @@ print("by Jakads\n\n")
 version = "1.1"
 
 print("(i) Checking for updates . . .")
-Update = False
 try:
     response = requests.get('https://raw.githubusercontent.com/jakads/Malody-to-Osumania/master/version.txt')
     print(f"(i) Latest Version = v{response.text}")
@@ -24,12 +23,10 @@ try:
         webbrowser.open('https://github.com/jakads/Malody-to-Osumania/releases')
         print("(i) Press any key to turn off the program.")
         getch()
-        Update = True
-        exit()
+        sys.exit()
 
     print("\n(i) Your program is as good as new! We're good to go.\n\n")
 except:
-    if Update: exit()
     print("(i) Latest Version = v???\n[!] Connection to GitHub failed. Will just continue...\n\n")
 
 def recursive_file_gen(mydir):
@@ -37,6 +34,7 @@ def recursive_file_gen(mydir):
         for file in files:
             yield os.path.join(root, file)
             #https://stackoverflow.com/questions/2865278
+            
 def convert(i, bgtmp, soundtmp):
     try:
         with open(f'{i}',encoding='utf-8') as mc:
@@ -183,11 +181,11 @@ def compress(compressname, name, bglist, soundlist):
     osz.close()
     oszname.append(f'{compressname}.osz')
 
-if len(argv)<=1:
+if len(sys.argv)<=1:
     print("(i) Drag .mc or .mcz/.zip files into this program to convert them to .osu or .osz!")
     print("(i) Press any key to turn off the program.")
     getch()
-    exit()
+    sys.exit()
 
 MCDragged = False
 MCValid = False
@@ -200,7 +198,7 @@ foldername = []
 oszname = []
 
 mctmp = []
-for x in argv[1:]:
+for x in sys.argv[1:]:
     isMCZ = False
     if os.path.isdir(x):
         print(f"[!] FileWarning: {os.path.split(x)[1]} is a directory, not a file. Ignoring...")
@@ -230,7 +228,7 @@ if not MCDragged and not ZIPDragged:
     print("\n[X] FILEERROR: None of the files you've dragged in are supported. This program only accepts .mc, .mcz, or .zip files.")
     print("(i) Press any key to turn off the program.")
     getch()
-    exit()
+    sys.exit()
 
 title = ""
 artist = ""
@@ -286,7 +284,7 @@ if not MCValid:
     print("\n[X] FILEERROR: None of the files you've dragged are supported.")
     print("(i) Press any key to turn off the program.")
     getch()
-    exit()
+    sys.exit()
 
 print('\n\n(i) All the supported .mc files have been converted to .osu!\n(i) Either close the program now and move the files manually,\n(i) or press Enter to compress all into .osz.')
 getch()
