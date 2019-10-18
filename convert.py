@@ -93,12 +93,24 @@ def convert(i, bgtmp, soundtmp):
     line = mcFile['time']
     meta = mcFile['meta']
     note = mcFile['note']
+    soundnote = {}
+    bpmoffset = []
 
     keys = meta["mode_ext"]["column"]
-    bpm = int(line[0]["bpm"])
+
+    for x in line:
+        pass
+
+    for x in note:
+        try:
+            if x.get('type',0):
+                soundnote = x
+                break
+        except:
+            pass
 
     try:
-        offset = -int(note[-1]["offset"])
+        offset = -soundnote["offset"]
     except:
         offset = 0
 
@@ -117,13 +129,12 @@ def convert(i, bgtmp, soundtmp):
     except:
         artistorg = meta["song"]["artist"]
 
-    global title
+    global title, artist #I know using global is a bad practice but c'mon
     title = meta["song"]["title"]
-    global artist
     artist = meta["song"]["artist"]
     background = meta["background"]
     if not background=="": bgtmp.append(f'{os.path.split(i)[0]}\\{background}')
-    sound = note[-1]["sound"]
+    sound = soundnote["sound"]
     if not sound=="": soundtmp.append(f'{os.path.split(i)[0]}\\{sound}')
     creator = meta["creator"]
     version = meta["version"]
@@ -173,12 +184,12 @@ def convert(i, bgtmp, soundtmp):
                      '//Background and Video events',
                      f'0,0,\"{background}\",0,0',
                      '',
-                     '[TimingPoints]',
-                     f'{offset},{60000/bpm},4,1,0,0,1,0',
-                     '',
-                     '[HitObjects]\n']
+                     '[TimingPoints]']
         osu.write('\n'.join(osuformat))
         #https://thrillfighter.tistory.com/310
+
+        for l in line:
+            osu.write(f'')
 
         for n in note[:-1]:
             if ms(n["beat"], bpm, offset)+offset >= 0:
@@ -221,7 +232,6 @@ if len(sys.argv)<=1:
 MCDragged = False
 MCValid = False
 ZIPDragged = False
-MultiBPM = False
 mcname = []
 zipname = []
 foldername = []
