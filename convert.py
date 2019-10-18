@@ -125,7 +125,7 @@ def convert(i, bgtmp, soundtmp):
     offset = note[-1].get('offset',0)
     preview = meta.get('preview',-1)
     titleorg = meta['song'].get('titleorg',title)
-    titleorg = meta['song'].get('artistorg',artist)
+    artistorg = meta['song'].get('artistorg',artist)
 
     background = meta["background"]
     if not background=="": bgtmp.append(f'{os.path.split(i)[0]}\\{background}')
