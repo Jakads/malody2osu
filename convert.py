@@ -94,25 +94,27 @@ def convert(i, bgtmp, soundtmp):
     meta = mcFile['meta']
     note = mcFile['note']
     soundnote = {}
-    bpmoffset = []
 
     keys = meta["mode_ext"]["column"]
 
-    for x in line:
-        pass
-
     for x in note:
-        try:
-            if x.get('type',0):
-                soundnote = x
-                break
-        except:
-            pass
+        if x.get('type',0):
+            soundnote = x
 
-    try:
-        offset = -soundnote["offset"]
-    except:
-        offset = 0
+    bpm = [line[0]['bpm']]
+    bpmoffset = [-soundnote["offset"]]
+
+    if len(line)>1:
+        i=0
+        lastbeat=line[0]['beat']
+        for x in line[1:]:
+            bpm.append(x['bpm'])
+            bpmoffset.append(bpmoffset[i] + ms(beatdiff(x['beat'],lastbeat),x['bpm'],bpmoffset[i]))
+            i+=1
+            lastbeat=x['beat']
+    print(bpm)
+    print(bpmoffset)
+    input()
 
     try:
         preview = meta["preview"]
@@ -199,8 +201,11 @@ def convert(i, bgtmp, soundtmp):
                     osu.write(f'{col(n["column"], keys)},192,{ms(n["beat"], bpm, offset)},128,0,{ms(n["endbeat"], bpm, offset)}\n')
     return 0
 
-def ms(beats, bpm, offset): #beats = [measure, nth beat, divisor]
-    return int(1000*(60/bpm)*(beats[0]+beats[1]/beats[2]))+offset
+def ms(beats, bpm, offset): 
+    return 1000*(60/bpm)*beats+offset
+
+def beatdiff(first, last): #beats = [measure, nth beat, divisor]
+    return first[0] + first[1]/first[2] - last[0] - last[1]/last[2]
 
 def col(column, keys):
     return int(512*(2*column+1)/(2*keys))
