@@ -117,30 +117,16 @@ def convert(i, bgtmp, soundtmp):
     keys = meta["mode_ext"]["column"]
     bpm = int(line[0]["bpm"])
 
-    try:
-        offset = -int(note[-1]["offset"])
-    except:
-        offset = 0
-
-    try:
-        preview = meta["preview"]
-    except:
-        preview = -1
-
-    try:
-        titleorg = meta["song"]["titleorg"]
-    except:
-        titleorg = meta["song"]["title"]
-
-    try:
-        artistorg = meta["song"]["artistorg"]
-    except:
-        artistorg = meta["song"]["artist"]
-
     global title
     title = meta["song"]["title"]
     global artist
     artist = meta["song"]["artist"]
+
+    offset = note[-1].get('offset',0)
+    preview = meta.get('preview',-1)
+    titleorg = meta['song'].get('titleorg',title)
+    titleorg = meta['song'].get('artistorg',artist)
+
     background = meta["background"]
     if not background=="": bgtmp.append(f'{os.path.split(i)[0]}\\{background}')
     sound = note[-1]["sound"]
