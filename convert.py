@@ -14,11 +14,11 @@ if getattr(sys, 'frozen', False):
     os.chdir(os.path.split(sys.executable)[0])
     #https://codeday.me/ko/qa/20190316/78831.html
 
-print("Malody to osu!mania Converter v1.2")
-print("October 16th, 2019")
+print("Malody to osu!mania Converter v1.3")
+print("October 20th, 2019")
 print("by Jakads\n\n")
 
-version = "1.2"
+version = "1.3"
 
 if '--:update' in sys.argv: #added ":" to disallow user to view this message by dragging in files
     print(f"[O] Successfully updated to v{version}! :D\n\n")
@@ -105,16 +105,13 @@ def convert(i, bgtmp, soundtmp):
     bpmoffset = [-soundnote["offset"]]
 
     if len(line)>1:
-        i=0
+        j=0
         lastbeat=line[0]['beat']
         for x in line[1:]:
             bpm.append(x['bpm'])
-            bpmoffset.append(bpmoffset[i] + ms(beatdiff(x['beat'],lastbeat),x['bpm'],bpmoffset[i]))
-            i+=1
+            bpmoffset.append(ms(beat(x['beat'])-beat(lastbeat),line[j]['bpm'],bpmoffset[j]))
+            j+=1
             lastbeat=x['beat']
-    print(bpm)
-    print(bpmoffset)
-    input()
 
     try:
         preview = meta["preview"]
@@ -141,7 +138,7 @@ def convert(i, bgtmp, soundtmp):
     creator = meta["creator"]
     version = meta["version"]
 
-    with open(f'{os.path.splitext(i)[0]}.osu',mode='at',encoding='utf-8') as osu:
+    with open(f'{os.path.splitext(i)[0]}.osu',mode='w',encoding='utf-8') as osu:
         osuformat = ['osu file format v14',
                      '',
                      '[General]',
@@ -186,26 +183,51 @@ def convert(i, bgtmp, soundtmp):
                      '//Background and Video events',
                      f'0,0,\"{background}\",0,0',
                      '',
-                     '[TimingPoints]']
+                     '[TimingPoints]\n']
         osu.write('\n'.join(osuformat))
         #https://thrillfighter.tistory.com/310
 
-        for l in line:
-            osu.write(f'')
+        bpmcount = len(bpm)
+        for x in range(bpmcount):
+            osu.write(f'{bpmoffset[x]},{60000/bpm[x]},{int(line[x].get("sign",4))},1,0,0,1,0\n')
 
-        for n in note[:-1]:
-            if ms(n["beat"], bpm, offset)+offset >= 0:
-                if len(n) == 2:  #Regular Note
-                    osu.write(f'{col(n["column"], keys)},192,{ms(n["beat"], bpm, offset)},1,0\n')
-                else:           #Long Note
-                    osu.write(f'{col(n["column"], keys)},192,{ms(n["beat"], bpm, offset)},128,0,{ms(n["endbeat"], bpm, offset)}\n')
+        osu.write('\n\n[HitObjects]\n')
+
+        for n in note:
+            if n.get('type',0):
+                continue
+            
+            j=0
+            k=0
+
+            for b in line:
+                if beat(b['beat']) > beat(n['beat']):
+                    j+=1
+                else:
+                    continue
+
+            if not n.get('endbeat') == None:
+                for b in line:
+                    if beat(b['beat']) > beat(n['endbeat']):
+                        k+=1
+                    else:
+                        continue
+
+            j=bpmcount-j-1
+            k=bpmcount-k-1
+
+            if int(ms(beat(n["beat"]), bpm[j], bpmoffset[j])) >= 0:
+                if n.get('endbeat') == None:  #Regular Note
+                    osu.write(f'{col(n["column"], keys)},192,{int(ms(beat(n["beat"])-beat(line[j]["beat"]), bpm[j], bpmoffset[j]))},1,0\n')
+                else:  #Long Note
+                    osu.write(f'{col(n["column"], keys)},192,{int(ms(beat(n["beat"])-beat(line[j]["beat"]), bpm[j], bpmoffset[j]))},128,0,{int(ms(beat(n["endbeat"])-beat(line[k]["beat"]), bpm[k], bpmoffset[k]))}\n')
     return 0
 
 def ms(beats, bpm, offset): 
     return 1000*(60/bpm)*beats+offset
 
-def beatdiff(first, last): #beats = [measure, nth beat, divisor]
-    return first[0] + first[1]/first[2] - last[0] - last[1]/last[2]
+def beat(beat): #beats = [measure, nth beat, divisor]
+    return beat[0] + beat[1]/beat[2]
 
 def col(column, keys):
     return int(512*(2*column+1)/(2*keys))
@@ -219,12 +241,18 @@ def compress(compressname, name, bglist, soundlist):
         print(f'[O] Compressed: {os.path.split(i)[1]}.osu')
     if not len(bglist)==0:
         for i in bglist:
-            osz.write(f'{i}')
-            print(f'[O] Compressed: {os.path.split(i)[1]}')
+            if os.path.isfile(i):
+                osz.write(f'{i}')
+                print(f'[O] Compressed: {os.path.split(i)[1]}')
+            else:
+                print(f'[!] {os.path.split(i)[1]} is not found and thus not compressed.')
     if not len(soundlist)==0:
         for i in soundlist:
-            osz.write(f'{i}')
-            print(f'[O] Compressed: {os.path.split(i)[1]}\n')
+            if os.path.isfile(i):
+                osz.write(f'{i}')
+                print(f'[O] Compressed: {os.path.split(i)[1]}\n')
+            else:
+                print(f'[!] {os.path.split(i)[1]} is not found and thus not compressed.')
     osz.close()
     oszname.append(f'{compressname}.osz')
 
@@ -237,6 +265,7 @@ if len(sys.argv)<=1:
 MCDragged = False
 MCValid = False
 ZIPDragged = False
+#FolderDragged = False
 mcname = []
 zipname = []
 foldername = []
@@ -246,9 +275,11 @@ mctmp = []
 for x in sys.argv[1:]:
     isMCZ = False
     if os.path.isdir(x):
+        #zipname.append(os.path.splitext(x)[0])
+        #FolderDragged = True
         print(f"[!] FileWarning: {os.path.split(x)[1]} is a directory, not a file. Ignoring...")
     elif not os.path.isfile(x):
-        print(f"[!] FileWarning: {os.path.split(x)[1]} does not exist. I recommend dragging the file into the program, not with a command prompt. Ignoring...")
+        print(f"[!] FileWarning: {os.path.split(x)[1]} is not found. I recommend dragging the file into the program, not with a command prompt. Ignoring...")
     elif os.path.splitext(x)[1].lower() == ".mc":
         mctmp.append(x)
         MCDragged = True
@@ -270,7 +301,7 @@ if MCDragged:
     mcname.append(mctmp)
 
 if not MCDragged and not ZIPDragged:
-    print("\n[X] FILEERROR: None of the files you've dragged in are supported. This program only accepts .mc, .mcz, or .zip files.")
+    print("\n[X] FILEERROR: None of the files you've dragged in are supported. This program only accepts .mc, .mcz, .zip files, or folders with them.")
     print("(i) Press any key to turn off the program.")
     getch()
     sys.exit()
