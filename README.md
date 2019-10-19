@@ -33,10 +33,13 @@ Supports all keys (4K~9K)
 * Supports time signature changes
 * Exports offsets of timing points as floats instead of integers for better accuracy
   * Offset of notes are still exported as integers since osu cannot read it properly
+* Displays error message instead of just crashing
+  * Please report if this ever happens!
 * New program icon by [@Nakaisu1](https://twitter.com/Nakaisu1)
 * Bug fixes
   * [#6](https://github.com/jakads/Malody-to-Osumania/issues/6) - If the target .osu already exists, it adds to it instead of overwriting it
   * [#5](https://github.com/jakads/Malody-to-Osumania/issues/5) - Crashes when the BG and Audio file specified in .mc file is not found
+  * Randomly crashes while compressing
 
 ### v1.2.1
 
@@ -44,7 +47,7 @@ Supports all keys (4K~9K)
 * Better wording (Press any key to turn off the program. → Press any key to exit.)
 * Opens this page(changelog) after finishing update
 * Bug fixes
-    * [#3](https://github.com/jakads/Malody-to-Osumania/issues/3) - Unable to deny the update
+  * [#3](https://github.com/jakads/Malody-to-Osumania/issues/3) - Unable to deny the update
 
 ### v1.2
 
