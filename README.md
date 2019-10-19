@@ -40,7 +40,7 @@ Supports all keys (4K~9K)
 * Supports time signature changes
 * Exports offsets of timing points as floats instead of integers for better accuracy
   * Offset of notes are still exported as integers since osu cannot read it properly
-* Displays error message instead of just crashing
+* **Displays error message instead of just crashing**
   * Please report if this ever happens!
 * Added .exe details
 * New program icon by [@Nakaisu1](https://twitter.com/Nakaisu1)
@@ -59,14 +59,14 @@ Supports all keys (4K~9K)
 
 ### v1.2
 
-* Downloads new .exe automatically and then replaces the current one after detecting available update
+* **Downloads new .exe automatically and then replaces the current one after detecting available update**
 * Bug fixes
   * Can't detect files with uppercase extensions (e.g. '.MC', '.MCZ', '.ZIP')
 
 ### v1.1
 
-* Automatically ignores unsupported files
-* Supports .mcz/.zip files
+* **Automatically ignores unsupported files**
+* **Supports .mcz/.zip files**
 * Waits until user's keyboard input using msvcrt.getch() instead of waiting 7 seconds using time.sleep(7)
 * Auto-Update feature ~~(temporary, might make it optional or create a seperate Update.exe program)~~\
 Made it optional
@@ -74,4 +74,4 @@ Made it optional
 
 ### v1.0
 
-* Initial Release
+* **Initial Release**
