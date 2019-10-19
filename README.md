@@ -35,6 +35,7 @@ Supports all keys (4K~9K)
   * Offset of notes are still exported as integers since osu cannot read it properly
 * Displays error message instead of just crashing
   * Please report if this ever happens!
+* Added .exe details
 * New program icon by [@Nakaisu1](https://twitter.com/Nakaisu1)
 * Bug fixes
   * [#6](https://github.com/jakads/Malody-to-Osumania/issues/6) - If the target .osu already exists, it adds to it instead of overwriting it
