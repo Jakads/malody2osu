@@ -10,13 +10,13 @@ from tqdm import tqdm
 import string
 import random
 
-version = "1.2.1"
-date = "October 16th, 2019"
+version = "1.3"
+date = "October 20th, 2019"
 
 if getattr(sys, 'frozen', False):
     os.chdir(os.path.split(sys.executable)[0])
     #https://codeday.me/ko/qa/20190316/78831.html
-
+    
 print(f"Malody to osu!mania Converter v{version}")
 print(date)
 print("by Jakads\n\n")
@@ -98,28 +98,32 @@ def convert(i, bgtmp, soundtmp):
     if not mcFile['meta']['mode'] == 0:
         print(f"[!] KeyWarning: {os.path.split(i)[1]} is not a Key difficulty. Ignoring...")
         return 1
-
-    else:
-        line = mcFile['time']
-
-        lineset = set()
-        for x in line:
-            lineset.add(x["bpm"])
-        if len(lineset)>1:
-            bpmname.append(os.path.split(i)[1])
-            print(f"[!] BPMWarning: {os.path.split(i)[1]} contains one or more BPM changes. Ignoring...")
-            MultiBPM = True
-            return 1
-
+        
+    line = mcFile['time']
     meta = mcFile['meta']
     note = mcFile['note']
+    soundnote = {}
 
     keys = meta["mode_ext"]["column"]
-    bpm = int(line[0]["bpm"])
 
-    global title
+    for x in note:
+        if x.get('type',0):
+            soundnote = x
+
+    bpm = [line[0]['bpm']]
+    bpmoffset = [-soundnote["offset"]]
+
+    if len(line)>1:
+        j=0
+        lastbeat=line[0]['beat']
+        for x in line[1:]:
+            bpm.append(x['bpm'])
+            bpmoffset.append(ms(beat(x['beat'])-beat(lastbeat),line[j]['bpm'],bpmoffset[j]))
+            j+=1
+            lastbeat=x['beat']
+
+    global title, artist #I know using global is a bad practice but c'mon
     title = meta["song"]["title"]
-    global artist
     artist = meta["song"]["artist"]
 
     offset = note[-1].get('offset',0)
@@ -129,12 +133,12 @@ def convert(i, bgtmp, soundtmp):
 
     background = meta["background"]
     if not background=="": bgtmp.append(f'{os.path.split(i)[0]}\\{background}')
-    sound = note[-1]["sound"]
+    sound = soundnote["sound"]
     if not sound=="": soundtmp.append(f'{os.path.split(i)[0]}\\{sound}')
     creator = meta["creator"]
     version = meta["version"]
 
-    with open(f'{os.path.splitext(i)[0]}.osu',mode='at',encoding='utf-8') as osu:
+    with open(f'{os.path.splitext(i)[0]}.osu',mode='w',encoding='utf-8') as osu:
         osuformat = ['osu file format v14',
                      '',
                      '[General]',
@@ -179,23 +183,51 @@ def convert(i, bgtmp, soundtmp):
                      '//Background and Video events',
                      f'0,0,\"{background}\",0,0',
                      '',
-                     '[TimingPoints]',
-                     f'{offset},{60000/bpm},4,1,0,0,1,0',
-                     '',
-                     '[HitObjects]\n']
+                     '[TimingPoints]\n']
         osu.write('\n'.join(osuformat))
         #https://thrillfighter.tistory.com/310
 
-        for n in note[:-1]:
-            if ms(n["beat"], bpm, offset)+offset >= 0:
-                if len(n) == 2:  #Regular Note
-                    osu.write(f'{col(n["column"], keys)},192,{ms(n["beat"], bpm, offset)},1,0\n')
-                else:           #Long Note
-                    osu.write(f'{col(n["column"], keys)},192,{ms(n["beat"], bpm, offset)},128,0,{ms(n["endbeat"], bpm, offset)}\n')
+        bpmcount = len(bpm)
+        for x in range(bpmcount):
+            osu.write(f'{bpmoffset[x]},{60000/bpm[x]},{int(line[x].get("sign",4))},1,0,0,1,0\n')
+
+        osu.write('\n\n[HitObjects]\n')
+
+        for n in note:
+            if n.get('type',0):
+                continue
+            
+            j=0
+            k=0
+
+            for b in line:
+                if beat(b['beat']) > beat(n['beat']):
+                    j+=1
+                else:
+                    continue
+
+            if not n.get('endbeat') == None:
+                for b in line:
+                    if beat(b['beat']) > beat(n['endbeat']):
+                        k+=1
+                    else:
+                        continue
+
+            j=bpmcount-j-1
+            k=bpmcount-k-1
+
+            if int(ms(beat(n["beat"]), bpm[j], bpmoffset[j])) >= 0:
+                if n.get('endbeat') == None:  #Regular Note
+                    osu.write(f'{col(n["column"], keys)},192,{int(ms(beat(n["beat"])-beat(line[j]["beat"]), bpm[j], bpmoffset[j]))},1,0\n')
+                else:  #Long Note
+                    osu.write(f'{col(n["column"], keys)},192,{int(ms(beat(n["beat"])-beat(line[j]["beat"]), bpm[j], bpmoffset[j]))},128,0,{int(ms(beat(n["endbeat"])-beat(line[k]["beat"]), bpm[k], bpmoffset[k]))}\n')
     return 0
 
-def ms(beats, bpm, offset): #beats = [measure, nth beat, divisor]
-    return int(1000*(60/bpm)*(beats[0]+beats[1]/beats[2]))+offset
+def ms(beats, bpm, offset): 
+    return 1000*(60/bpm)*beats+offset
+
+def beat(beat): #beats = [measure, nth beat, divisor]
+    return beat[0] + beat[1]/beat[2]
 
 def col(column, keys):
     return int(512*(2*column+1)/(2*keys))
@@ -209,12 +241,18 @@ def compress(compressname, name, bglist, soundlist):
         print(f'[O] Compressed: {os.path.split(i)[1]}.osu')
     if not len(bglist)==0:
         for i in bglist:
-            osz.write(f'{i}')
-            print(f'[O] Compressed: {os.path.split(i)[1]}')
+            if os.path.isfile(i):
+                osz.write(f'{i}')
+                print(f'[O] Compressed: {os.path.split(i)[1]}')
+            else:
+                print(f'[!] {os.path.split(i)[1]} is not found and thus not compressed.')
     if not len(soundlist)==0:
         for i in soundlist:
-            osz.write(f'{i}')
-            print(f'[O] Compressed: {os.path.split(i)[1]}\n')
+            if os.path.isfile(i):
+                osz.write(f'{i}')
+                print(f'[O] Compressed: {os.path.split(i)[1]}\n')
+            else:
+                print(f'[!] {os.path.split(i)[1]} is not found and thus not compressed.')
     osz.close()
     oszname.append(f'{compressname}.osz')
 
@@ -227,10 +265,9 @@ if len(sys.argv)<=1:
 MCDragged = False
 MCValid = False
 ZIPDragged = False
-MultiBPM = False
+#FolderDragged = False
 mcname = []
 zipname = []
-bpmname = []
 foldername = []
 oszname = []
 
@@ -238,9 +275,11 @@ mctmp = []
 for x in sys.argv[1:]:
     isMCZ = False
     if os.path.isdir(x):
+        #zipname.append(os.path.splitext(x)[0])
+        #FolderDragged = True
         print(f"[!] FileWarning: {os.path.split(x)[1]} is a directory, not a file. Ignoring...")
     elif not os.path.isfile(x):
-        print(f"[!] FileWarning: {os.path.split(x)[1]} does not exist. I recommend dragging the file into the program, not with a command prompt. Ignoring...")
+        print(f"[!] FileWarning: {os.path.split(x)[1]} is not found. I recommend dragging the file into the program, not with a command prompt. Ignoring...")
     elif os.path.splitext(x)[1].lower() == ".mc":
         mctmp.append(x)
         MCDragged = True
@@ -262,7 +301,7 @@ if MCDragged:
     mcname.append(mctmp)
 
 if not MCDragged and not ZIPDragged:
-    print("\n[X] FILEERROR: None of the files you've dragged in are supported. This program only accepts .mc, .mcz, or .zip files.")
+    print("\n[X] FILEERROR: None of the files you've dragged in are supported. This program only accepts .mc, .mcz, .zip files, or folders with them.")
     print("(i) Press any key to exit.")
     getch()
     sys.exit()
@@ -311,11 +350,6 @@ if ZIPDragged:
             bglist.append(bgtmp)
             soundlist.append(soundtmp)
             mcname.append(mctmp)
-
-if MultiBPM:
-    print("\n(i) This program does not support difficulties with multiple BPMs yet, thus the following files has not been converted.\n(i) Sorry for the inconvenience, and please try again in the future updates.")
-    for i in bpmname:
-        print(f'* {i}')
 
 if not MCValid:
     print("\n[X] FILEERROR: None of the files you've dragged are supported.")
