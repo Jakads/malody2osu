@@ -10,21 +10,35 @@ from tqdm import tqdm
 import string
 import random
 
+version = "1.3"
+date = "October 20th, 2019"
+
 if getattr(sys, 'frozen', False):
     os.chdir(os.path.split(sys.executable)[0])
     #https://codeday.me/ko/qa/20190316/78831.html
-
-print("Malody to osu!mania Converter v1.3")
-print("October 20th, 2019")
+    
+print(f"Malody to osu!mania Converter v{version}")
+print(date)
 print("by Jakads\n\n")
 
-version = "1.3"
+def choose():
+    choice = getch().decode()
+    while choice not in 'yYnN':
+        choice = getch().decode()
+    
+    if choice in 'nN':
+        return 0
+    
+    else:
+        return 1
 
 if '--:update' in sys.argv: #added ":" to disallow user to view this message by dragging in files
-    print(f"[O] Successfully updated to v{version}! :D\n\n")
+    print(f"[O] Successfully updated to v{version}! :D\n[!] Would you like to check out the changelog? (Y/N)\n")
+    if choose():
+        webbrowser.open('https://github.com/jakads/Malody-to-Osumania#changelog')
     sys.argv.remove('--:update')
 
-print("(i) Checking for updates . . .")
+print("(i) Checking new updates . . .")
 try:
     latest = requests.get('https://github.com/jakads/Malody-to-Osumania/raw/master/version.txt')
     latest.raise_for_status()
@@ -32,12 +46,8 @@ try:
 
     if latest.text != version:
         print("\n[!] New update is available! Would you like to download? (Y/N)")
-        choice = getch()
-        while choice != (b'y' or b'Y' or b'n' or b'N'):
-            choice = getch()
-        
-        if choice == (b'n' or b'N'):
-            print("(i) Skipping the update.")
+        if not choose():
+            print("(i) Skipping the update.\n\n")
 
         else:
             print("(i) Downloading . . .")
@@ -63,12 +73,11 @@ try:
                                    f'del {rand}.bat']))
             os.startfile(f'{rand}.bat')
             sys.exit()
-            #webbrowser.open('https://github.com/jakads/Malody-to-Osumania#changelog')
-
+            
     else:
-        print("\n(i) Your program is as good as new! We're good to go.\n\n")
+        print("\n[O] Your program is as good as new! We're good to go.\n\n")
 except Exception as e:
-    print(e)
+    print("\n[!] Fatal Error while connecting:", e)
     print("\n[!] Connection to GitHub failed. Will just continue...\n\n")
     
 def recursive_file_gen(mydir):
@@ -113,24 +122,15 @@ def convert(i, bgtmp, soundtmp):
             j+=1
             lastbeat=x['beat']
 
-    try:
-        preview = meta["preview"]
-    except:
-        preview = -1
-
-    try:
-        titleorg = meta["song"]["titleorg"]
-    except:
-        titleorg = meta["song"]["title"]
-
-    try:
-        artistorg = meta["song"]["artistorg"]
-    except:
-        artistorg = meta["song"]["artist"]
-
     global title, artist #I know using global is a bad practice but c'mon
     title = meta["song"]["title"]
     artist = meta["song"]["artist"]
+
+    offset = note[-1].get('offset',0)
+    preview = meta.get('preview',-1)
+    titleorg = meta['song'].get('titleorg',title)
+    artistorg = meta['song'].get('artistorg',artist)
+
     background = meta["background"]
     if not background=="": bgtmp.append(f'{os.path.split(i)[0]}\\{background}')
     sound = soundnote["sound"]
@@ -258,7 +258,7 @@ def compress(compressname, name, bglist, soundlist):
 
 if len(sys.argv)<=1:
     print("(i) Drag .mc or .mcz/.zip files into this program to convert them to .osu or .osz!")
-    print("(i) Press any key to turn off the program.")
+    print("(i) Press any key to exit.")
     getch()
     sys.exit()
 
@@ -302,7 +302,7 @@ if MCDragged:
 
 if not MCDragged and not ZIPDragged:
     print("\n[X] FILEERROR: None of the files you've dragged in are supported. This program only accepts .mc, .mcz, .zip files, or folders with them.")
-    print("(i) Press any key to turn off the program.")
+    print("(i) Press any key to exit.")
     getch()
     sys.exit()
 
@@ -353,7 +353,7 @@ if ZIPDragged:
 
 if not MCValid:
     print("\n[X] FILEERROR: None of the files you've dragged are supported.")
-    print("(i) Press any key to turn off the program.")
+    print("(i) Press any key to exit.")
     getch()
     sys.exit()
 
@@ -376,5 +376,5 @@ if ZIPDragged:
 print('\n(i) The following .osz files have been created! Run the files to add the maps to osu! automatically.\n')
 for i in oszname:
     print(f'* {i}')
-print('\n(i) Press any key to turn off the program.')
+print('\n(i) Press any key to exit.')
 getch()
