@@ -9,10 +9,12 @@ import webbrowser
 from tqdm import tqdm
 import string
 import random
+import ctypes
 
 try:
-    version = "1.3"
+    version = "1.3.1"
     date = "October 20th, 2019"
+    ctypes.windll.kernel32.SetConsoleTitleW(f"Malody to osu!mania Converter v{version}") #https://stackoverflow.com/questions/7387276
     
     if getattr(sys, 'frozen', False):
         os.chdir(os.path.split(sys.executable)[0])
@@ -68,9 +70,9 @@ try:
                                        'echo (i) Restarting . . .',
                                        "echo (i) All the files you've dragged in will be converted very soon!",
                                        'timeout /t 5 /nobreak >nul',
-                                       f'del {filename}',
-                                       f'rename {rand}.exe {filename}',
-                                       f'start {filename} --:update {" ".join(sys.argv[1:]) if len(sys.argv)>1 else ""}',
+                                       f'del "{filename}"',
+                                       f'rename {rand}.exe "{filename}"',
+                                       f'start cmd /c "{filename}" --:update {" ".join(sys.argv[1:]) if len(sys.argv)>1 else ""}',
                                        f'del {rand}.bat']))
                 os.startfile(f'{rand}.bat')
                 sys.exit()
@@ -302,7 +304,8 @@ try:
         mcname.append(mctmp)
     
     if not MCDragged and not ZIPDragged:
-        print("\n[X] FILEERROR: None of the files you've dragged in are supported. This program only accepts .mc, .mcz, .zip files, or folders with them.")
+        #print("\n[X] FILEERROR: None of the files you've dragged in are supported. This program only accepts .mc, .mcz, .zip files, or folders with them.")
+        print("\n[X] FILEERROR: None of the files you've dragged in are supported. This program only accepts .mc, .mcz, or .zip files.")
         print("(i) Press any key to exit.")
         getch()
         sys.exit()

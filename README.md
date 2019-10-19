@@ -27,6 +27,13 @@ Supports all keys (4K~9K)
 
 ## Changelog
 
+### v1.3.1
+
+* Added window title
+* Typo, whoops
+* Bug fixes
+  * Updating fails if the original .exe has a whitespace in its name
+
 ### v1.3
 
 * [#4](https://github.com/jakads/Malody-to-Osumania/issues/4) - __**Supports multiple BPMs**__
