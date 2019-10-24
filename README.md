@@ -1,6 +1,6 @@
 # Malody to osu!mania Converter
 
-Windows-only program that converts Malody Key mode charts to osu!mania\
+Converts Malody Key mode charts to osu!mania\
 Roughly coded in python by request\
 Supports all keys (4K~9K)
 
@@ -12,20 +12,28 @@ Supports all keys (4K~9K)
 
 ## Disclaimer
 
+* This program is for Windows only.
 * Expect bugs. Please report if you ever experience one!
 * All the .mc files you have dragged in will be compressed into a single mapset.
 * All the .mcz/.zip files you have dragged in will be compressed into seperate mapsets. A mapset per file.
-* **Only supports charts with no BPM changes for the time being.** Should really work on that.
-* Doesn't support custom hitsounds and SVs yet.
 
 ## TODO
 
-* Support folders
+* **Support folders**
+* **Support Taiko and Catch**
 * Support custom hitsounds and SVs
 * Various color output using Colorama
 * More user-friendly GUI using Tkinter... maybe?
 
 ## Changelog
+
+### v1.3.2
+
+* Exports a crash traceback log file upon crash
+* Faster download speed by using 8KB chunks instead of 4KB
+* Bug fixes
+  * [#8](https://github.com/jakads/Malody-to-Osumania/issues/8) - sys.argv Not Delivered Properly Midst of an Update
+  * Temporary batch file fails to pass arguments to the updated .exe file
 
 ### v1.3.1
 
