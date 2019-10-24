@@ -16,7 +16,7 @@ from datetime import datetime
 lastfile = "None"
 
 try:
-    version = "1.3.2"
+    version = "1.3.2.1"
     date = "October 25th, 2019"
     ctypes.windll.kernel32.SetConsoleTitleW(f"Malody to osu!mania Converter v{version}") #https://stackoverflow.com/questions/7387276
     
@@ -74,7 +74,7 @@ try:
                         if chunk:
                             progress.update(8192)
                             f.write(chunk)
-                with open(f'{rand}.bat', 'w') as f:
+                with open(f'{rand}.bat', 'w', encoding='utf-8') as f:
                     f.write('\n'.join(['@echo off',
                                        'echo (i) Restarting . . .',
                                        "echo (i) All the files you've dragged in will be converted very soon!",

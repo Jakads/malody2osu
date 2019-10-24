@@ -34,6 +34,7 @@ Supports all keys (4K~9K)
 * Bug fixes
   * [#8](https://github.com/jakads/Malody-to-Osumania/issues/8) - sys.argv Not Delivered Properly Midst of an Update
   * Temporary batch file fails to pass arguments to the updated .exe file
+  * v1.3.2.1 : Fails to create a new batch file if the arguments contain UTF-8 characters
 
 ### v1.3.1
 
