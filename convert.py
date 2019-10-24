@@ -65,9 +65,9 @@ try:
                 rand=''.join(random.choice(string.ascii_letters + string.digits) for i in range(16)) #https://pynative.com/python-generate-random-string/
                 filename=os.path.split(sys.executable)[1]
                 with open(f"{rand}.exe", 'wb') as f: #https://stackoverflow.com/questions/37573483
-                    for chunk in exe.iter_content(chunk_size=4096):
+                    for chunk in exe.iter_content(chunk_size=8192):
                         if chunk:
-                            progress.update(4096)
+                            progress.update(8192)
                             f.write(chunk)
                 with open(f'{rand}.bat', 'w') as f:
                     f.write('\n'.join(['@echo off',
@@ -76,9 +76,8 @@ try:
                                        'timeout /t 5 /nobreak >nul',
                                        f'del "{filename}"',
                                        f'rename {rand}.exe "{filename}"',
-                                       f'del {rand}.bat',
                                        'cls',
-                                       '"{0}" --:update {1}'.format(filename, ' '.join(f'"{file}\"' for file in sys.argv[1:]) if len(sys.argv)>1 else '')])) #https://stackoverflow.com/questions/12007686
+                                       '"{0}" --:update {1}.bat {2}'.format(filename, rand, ' '.join(f'"{file}\"' for file in sys.argv[1:]) if len(sys.argv)>1 else '')])) #https://stackoverflow.com/questions/12007686
                 os.startfile(f'{rand}.bat')
                 sys.exit()
                 
