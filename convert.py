@@ -252,7 +252,6 @@ try:
             print(f'[O] Compressed: {os.path.split(i)[1]}.osu')
         if not len(bglist)==0:
             for i in bglist:
-                lastfile = i
                 if os.path.isfile(i):
                     osz.write(f'{i}')
                     print(f'[O] Compressed: {os.path.split(i)[1]}')
@@ -260,7 +259,6 @@ try:
                     print(f'[!] {os.path.split(i)[1]} is not found and thus not compressed.')
         if not len(soundlist)==0:
             for i in soundlist:
-                lastfile = i
                 if os.path.isfile(i):
                     osz.write(f'{i}')
                     print(f'[O] Compressed: {os.path.split(i)[1]}\n')
