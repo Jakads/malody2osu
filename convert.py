@@ -12,7 +12,7 @@ import random
 import ctypes
 
 try:
-    version = "1.3.1"
+    version = "12345"
     date = "October 20th, 2019"
     ctypes.windll.kernel32.SetConsoleTitleW(f"Malody to osu!mania Converter v{version}") #https://stackoverflow.com/questions/7387276
     
@@ -35,11 +35,15 @@ try:
         else:
             return 1
     
-    if '--:update' in sys.argv[:]: #added ":" to disallow user to view this message by dragging in files
+    if sys.argv[1] == '--:update': #added ":" to disallow user to view this message by dragging in files
+        if os.path.isfile(sys.argv[2]):
+            os.remove(sys.argv[2])
+        else:
+            print(f'[X] Failed to remove the temporary batch file({sys.argv[2]}). Please remove it manually. This message is not supposed to be shown.\n')
         print(f"[O] Successfully updated to v{version}! :D\n[!] Would you like to check out the changelog? (Y/N)\n")
         if choose():
             webbrowser.open('https://github.com/jakads/Malody-to-Osumania#changelog')
-        sys.argv.remove('--:update')
+        del sys.argv[1], sys.argv[1] #Deleting second element twice actually deletes second and third
     
     print("(i) Checking new updates . . .")
     try:
@@ -72,8 +76,9 @@ try:
                                        'timeout /t 5 /nobreak >nul',
                                        f'del "{filename}"',
                                        f'rename {rand}.exe "{filename}"',
-                                       f'start cmd /c "{filename}" --:update {" ".join(sys.argv[1:]) if len(sys.argv)>1 else ""}',
-                                       f'del {rand}.bat']))
+                                       f'del {rand}.bat',
+                                       'cls',
+                                       '"{0}" --:update {1}'.format(filename, ' '.join(f'"{file}\"' for file in sys.argv[1:]) if len(sys.argv)>1 else '')])) #https://stackoverflow.com/questions/12007686
                 os.startfile(f'{rand}.bat')
                 sys.exit()
                 
@@ -281,7 +286,7 @@ try:
             #FolderDragged = True
             print(f"[!] FileWarning: {os.path.split(x)[1]} is a directory, not a file. Ignoring...")
         elif not os.path.isfile(x):
-            print(f"[!] FileWarning: {os.path.split(x)[1]} is not found. I recommend dragging the file into the program, not with a command prompt. Ignoring...")
+            print(f"[!] FileWarning: {os.path.split(x)[1]} is not found. You normally aren't supposed to this message. Ignoring...")
         elif os.path.splitext(x)[1].lower() == ".mc":
             mctmp.append(x)
             MCDragged = True
