@@ -13,7 +13,7 @@ import ctypes
 import traceback
 from datetime import datetime
 
-lastfile = ""
+lastfile = "None"
 
 try:
     version = "1.3.2"
@@ -27,7 +27,6 @@ try:
     print(f"Malody to osu!mania Converter v{version}")
     print(date)
     print("by Jakads\n\n")
-    print(aga)
     
     def choose():
         choice = getch().decode()
@@ -100,7 +99,6 @@ try:
                 #https://stackoverflow.com/questions/2865278
     
     def convert(i, bgtmp, soundtmp):
-        lastfile = i
         try:
             with open(f'{i}',encoding='utf-8') as mc:
                 mcFile = json.loads(mc.read())
@@ -249,7 +247,6 @@ try:
         osz = zipfile.ZipFile(f'{compressname}.osz','w')
     
         for i in name:
-            lastfile = i
             osz.write(f'{os.path.splitext(i)[0]}.osu')
             os.remove(f'{os.path.splitext(i)[0]}.osu')
             print(f'[O] Compressed: {os.path.split(i)[1]}.osu')
@@ -405,7 +402,7 @@ except Exception as e:
     crashlog = f'CrashLog_{datetime.now().strftime("%Y%m%d%H%M%S")}.log'
     with open(crashlog,mode='w',encoding='utf-8') as crash:
         crash.write(f"Target File: {lastfile}")
-        crash.write(traceback.format_exc)
+        crash.write(traceback.format_exc())
     print(f'\n[X] The crash log has been saved as {crashlog}.')
     print('[X] Please tell the dev about this!')
     print('(i) Press any key to exit.')
