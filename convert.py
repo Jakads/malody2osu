@@ -10,10 +10,14 @@ from tqdm import tqdm
 import string
 import random
 import ctypes
+import traceback
+from datetime import datetime
+
+lastfile = ""
 
 try:
-    version = "12345"
-    date = "October 20th, 2019"
+    version = "1.3.2"
+    date = "October 25th, 2019"
     ctypes.windll.kernel32.SetConsoleTitleW(f"Malody to osu!mania Converter v{version}") #https://stackoverflow.com/questions/7387276
     
     if getattr(sys, 'frozen', False):
@@ -23,6 +27,7 @@ try:
     print(f"Malody to osu!mania Converter v{version}")
     print(date)
     print("by Jakads\n\n")
+    print(aga)
     
     def choose():
         choice = getch().decode()
@@ -35,7 +40,8 @@ try:
         else:
             return 1
     
-    if sys.argv[1] == '--:update': #added ":" to disallow user to view this message by dragging in files
+    if len(sys.argv) > 1 and sys.argv[1] == '--:update': #added ":" to disallow user to view this message by dragging in files
+    #checks the first condition first so it will not give IndexError
         if os.path.isfile(sys.argv[2]):
             os.remove(sys.argv[2])
         else:
@@ -45,7 +51,7 @@ try:
             webbrowser.open('https://github.com/jakads/Malody-to-Osumania#changelog')
         del sys.argv[1], sys.argv[1] #Deleting second element twice actually deletes second and third
     
-    print("(i) Checking new updates . . .")
+    print("(i) Checking for new updates . . .")
     try:
         latest = requests.get('https://github.com/jakads/Malody-to-Osumania/raw/master/version.txt')
         latest.raise_for_status()
@@ -84,7 +90,7 @@ try:
         else:
             print("\n[O] Your program is as good as new! We're good to go.\n\n")
     except Exception as e:
-        print("\n[!] Fatal Error while connecting:", e)
+        print("\n[!] Error while connecting:", e)
         print("\n[!] Connection to GitHub failed. Will just continue...\n\n")
         
     def recursive_file_gen(mydir):
@@ -94,6 +100,7 @@ try:
                 #https://stackoverflow.com/questions/2865278
     
     def convert(i, bgtmp, soundtmp):
+        lastfile = i
         try:
             with open(f'{i}',encoding='utf-8') as mc:
                 mcFile = json.loads(mc.read())
@@ -242,11 +249,13 @@ try:
         osz = zipfile.ZipFile(f'{compressname}.osz','w')
     
         for i in name:
+            lastfile = i
             osz.write(f'{os.path.splitext(i)[0]}.osu')
             os.remove(f'{os.path.splitext(i)[0]}.osu')
             print(f'[O] Compressed: {os.path.split(i)[1]}.osu')
         if not len(bglist)==0:
             for i in bglist:
+                lastfile = i
                 if os.path.isfile(i):
                     osz.write(f'{i}')
                     print(f'[O] Compressed: {os.path.split(i)[1]}')
@@ -254,6 +263,7 @@ try:
                     print(f'[!] {os.path.split(i)[1]} is not found and thus not compressed.')
         if not len(soundlist)==0:
             for i in soundlist:
+                lastfile = i
                 if os.path.isfile(i):
                     osz.write(f'{i}')
                     print(f'[O] Compressed: {os.path.split(i)[1]}\n')
@@ -390,7 +400,13 @@ try:
     getch()
     
 except Exception as e:
-    print(f'\n\n\n[X] FATAL ERROR : {repr(e)}')
+    print(f'\n\n\n[X] FATAL ERROR : {repr(e)}\n')
+    traceback.print_exc()
+    crashlog = f'CrashLog_{datetime.now().strftime("%Y%m%d%H%M%S")}.log'
+    with open(crashlog,mode='w',encoding='utf-8') as crash:
+        crash.write(f"Target File: {lastfile}")
+        crash.write(traceback.format_exc)
+    print(f'\n[X] The crash log has been saved as {crashlog}.')
     print('[X] Please tell the dev about this!')
     print('(i) Press any key to exit.')
     getch()
