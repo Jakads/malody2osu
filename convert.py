@@ -4,24 +4,19 @@ import sys
 import zipfile
 from shutil import rmtree
 from msvcrt import getch
-import requests
-import webbrowser
-from tqdm import tqdm
-import string
-import random
 import ctypes
 import traceback
 from datetime import datetime
 
-lastfile = "None"
+lastfile = "N/A"
+version = "Final"
+date = "November 5th, 2019"
 
 try:
-    version = "1.3.2.1"
-    date = "October 25th, 2019"
     ctypes.windll.kernel32.SetConsoleTitleW(f"Malody to osu!mania Converter v{version}") #https://stackoverflow.com/questions/7387276
     
     if getattr(sys, 'frozen', False):
-        os.chdir(os.path.split(sys.executable)[0])
+        os.chdir(os.path.dirname(sys.executable))
         #https://codeday.me/ko/qa/20190316/78831.html
         
     print(f"Malody to osu!mania Converter v{version}")
@@ -39,6 +34,7 @@ try:
         else:
             return 1
     
+    """
     if len(sys.argv) > 1 and sys.argv[1] == '--:update': #added ":" to disallow user to view this message by dragging in files
     #checks the first condition first so it will not give IndexError
         if os.path.isfile(sys.argv[2]):
@@ -68,7 +64,7 @@ try:
                 total = int(exe.headers.get('content-length'))
                 progress = tqdm(total=total, unit='B', unit_scale=True, unit_divisor=1024, ncols=80) #https://github.com/tqdm/tqdm/wiki/How-to-make-a-great-Progress-Bar
                 rand=''.join(random.choice(string.ascii_letters + string.digits) for i in range(16)) #https://pynative.com/python-generate-random-string/
-                filename=os.path.split(sys.executable)[1]
+                filename=os.path.basename(sys.executable)
                 with open(f"{rand}.exe", 'wb') as f: #https://stackoverflow.com/questions/37573483
                     for chunk in exe.iter_content(chunk_size=8192):
                         if chunk:
@@ -91,6 +87,7 @@ try:
     except Exception as e:
         print("\n[!] Error while connecting:", e)
         print("\n[!] Connection to GitHub failed. Will just continue...\n\n")
+    """
         
     def recursive_file_gen(mydir):
         for root, dirs, files in os.walk(mydir):
@@ -99,21 +96,32 @@ try:
                 #https://stackoverflow.com/questions/2865278
     
     def convert(i, bgtmp, soundtmp):
+        lastfile = f'{i} (Crashed while reading)'
+
         try:
             with open(f'{i}',encoding='utf-8') as mc:
                 mcFile = json.loads(mc.read())
             mcFile['meta']['mode']
         except:
-            print(f"[!] FileWarning: {os.path.split(i)[1]} is not a valid .mc file. Ignoring...")
+            print(f"[!] FileWarning: {os.path.basename(i)} is not a valid .mc file. Ignoring...")
             return 1
     
         if not mcFile['meta']['mode'] == 0:
-            print(f"[!] KeyWarning: {os.path.split(i)[1]} is not a Key difficulty. Ignoring...")
+            print(f"[!] KeyWarning: {os.path.basename(i)} is not a Key difficulty. Ignoring...")
             return 1
+
+        ms = lambda beats, bpm, offset: 1000*(60/bpm)*beats+offset
+        beat = lambda beat: beat[0] + beat[1]/beat[2] #beats = [measure, nth beat, divisor]
+        col = lambda column, keys: int(512*(2*column+1)/(2*keys))
+
+        SVMap = False
             
         line = mcFile['time']
         meta = mcFile['meta']
         note = mcFile['note']
+        if 'effect' in mcFile and len(mcFile['effect'])>0:
+            sv = mcFile['effect']
+            SVMap = True
         soundnote = {}
     
         keys = meta["mode_ext"]["column"]
@@ -143,11 +151,13 @@ try:
         artistorg = meta['song'].get('artistorg',artist)
     
         background = meta["background"]
-        if not background=="": bgtmp.append(f'{os.path.split(i)[0]}\\{background}')
+        if not background=="": bgtmp.append(f'{os.path.dirname(i)}\\{background}')
         sound = soundnote["sound"]
-        if not sound=="": soundtmp.append(f'{os.path.split(i)[0]}\\{sound}')
+        if not sound=="": soundtmp.append(f'{os.path.dirname(i)}\\{sound}')
         creator = meta["creator"]
         version = meta["version"]
+
+        lastfile = f'{i} (Crashed while converting)'
     
         with open(f'{os.path.splitext(i)[0]}.osu',mode='w',encoding='utf-8') as osu:
             osuformat = ['osu file format v14',
@@ -201,11 +211,26 @@ try:
             bpmcount = len(bpm)
             for x in range(bpmcount):
                 osu.write(f'{bpmoffset[x]},{60000/bpm[x]},{int(line[x].get("sign",4))},1,0,0,1,0\n')
+
+            if SVMap:
+                for n in sv:
+                    j=0
     
-            osu.write('\n\n[HitObjects]\n')
+                    for b in line:
+                        if beat(b['beat']) > beat(n['beat']):
+                            j+=1
+                        else:
+                            continue
+    
+                    j=bpmcount-j-1
+    
+                    if int(ms(beat(n["beat"]), bpm[j], bpmoffset[j])) >= bpmoffset[0]:
+                        osu.write(f'{ms(beat(n["beat"])-beat(line[j]["beat"]), bpm[j], bpmoffset[j])},-{100/abs(n["scroll"]) if n["scroll"]!=0 else "1E+308"},{int(line[j].get("sign",4))},1,0,0,0,0\n')
+    
+            osu.write('\n\n[HitObjects]')
     
             for n in note:
-                if n.get('type',0):
+                if not n.get('type',0) == 0:
                     continue
                 
                 j=0
@@ -228,42 +253,43 @@ try:
                 k=bpmcount-k-1
     
                 if int(ms(beat(n["beat"]), bpm[j], bpmoffset[j])) >= 0:
+                    osu.write(f'\n{col(n["column"], keys)},192,{int(ms(beat(n["beat"])-beat(line[j]["beat"]), bpm[j], bpmoffset[j]))}')
+
                     if n.get('endbeat') == None:  #Regular Note
-                        osu.write(f'{col(n["column"], keys)},192,{int(ms(beat(n["beat"])-beat(line[j]["beat"]), bpm[j], bpmoffset[j]))},1,0\n')
+                        osu.write(',1,0,0:0:0:')
                     else:  #Long Note
-                        osu.write(f'{col(n["column"], keys)},192,{int(ms(beat(n["beat"])-beat(line[j]["beat"]), bpm[j], bpmoffset[j]))},128,0,{int(ms(beat(n["endbeat"])-beat(line[k]["beat"]), bpm[k], bpmoffset[k]))}\n')
+                        osu.write(f',128,0,{int(ms(beat(n["endbeat"])-beat(line[k]["beat"]), bpm[k], bpmoffset[k]))}:0:0:0:')
+                        
+                    if n.get('sound') == None:
+                        osu.write('0:')
+                    else:  #Hitsound Note
+                        osu.write('{0}:{1}'.format(n['vol'],n['sound'].replace('"','')))
         return 0
-    
-    def ms(beats, bpm, offset): 
-        return 1000*(60/bpm)*beats+offset
-    
-    def beat(beat): #beats = [measure, nth beat, divisor]
-        return beat[0] + beat[1]/beat[2]
-    
-    def col(column, keys):
-        return int(512*(2*column+1)/(2*keys))
     
     def compress(compressname, name, bglist, soundlist):
         osz = zipfile.ZipFile(f'{compressname}.osz','w')
     
         for i in name:
-            osz.write(f'{os.path.splitext(i)[0]}.osu')
+            lastfile = f'{i} (Crashed while compressing)'
+            osz.write(f'{os.path.splitext(i)[0]}.osu', f'{os.path.basename(i)}.osu')
             os.remove(f'{os.path.splitext(i)[0]}.osu')
-            print(f'[O] Compressed: {os.path.split(i)[1]}.osu')
+            print(f'[O] Compressed: {os.path.splitext(i)[0]}.osu')
         if not len(bglist)==0:
             for i in bglist:
+                lastfile = f'{i} (Crashed while compressing)'
                 if os.path.isfile(i):
-                    osz.write(f'{i}')
-                    print(f'[O] Compressed: {os.path.split(i)[1]}')
+                    osz.write(i, os.path.basename(i))
+                    print(f'[O] Compressed: {os.path.basename(i)}')
                 else:
-                    print(f'[!] {os.path.split(i)[1]} is not found and thus not compressed.')
+                    print(f'[!] {os.path.basename(i)} is not found and thus not compressed.')
         if not len(soundlist)==0:
             for i in soundlist:
+                lastfile = f'{i} (Crashed while compressing)'
                 if os.path.isfile(i):
-                    osz.write(f'{i}')
-                    print(f'[O] Compressed: {os.path.split(i)[1]}\n')
+                    osz.write(i, os.path.basename(i))
+                    print(f'[O] Compressed: {os.path.basename(i)}\n')
                 else:
-                    print(f'[!] {os.path.split(i)[1]} is not found and thus not compressed.')
+                    print(f'[!] {os.path.basename(i)} is not found and thus not compressed.')
         osz.close()
         oszname.append(f'{compressname}.osz')
     
@@ -283,18 +309,20 @@ try:
     oszname = []
     
     mctmp = []
+    print('(i) Checking file validity . . .\n')
     for x in sys.argv[1:]:
+        lastfile = f'{x} (Crashed while checking)'
         isMCZ = False
         if os.path.isdir(x):
             #zipname.append(os.path.splitext(x)[0])
             #FolderDragged = True
-            print(f"[!] FileWarning: {os.path.split(x)[1]} is a directory, not a file. Ignoring...")
+            print(f"[!] FileWarning: {os.path.basename(x)} is a directory, not a file. Ignoring...")
         elif not os.path.isfile(x):
-            print(f"[!] FileWarning: {os.path.split(x)[1]} is not found. You normally aren't supposed to this message. Ignoring...")
+            print(f"[!] FileWarning: {os.path.basename(x)} is not found. You normally aren't supposed to see this message. Ignoring...")
         elif os.path.splitext(x)[1].lower() == ".mc":
             mctmp.append(x)
             MCDragged = True
-        elif os.path.splitext(x)[1].lower() == (".mcz" or ".zip"):
+        elif os.path.splitext(x)[1].lower() in [".mcz", ".zip"]:
             if os.path.splitext(x)[1].lower() == ".mcz":
                 isMCZ = True
                 os.rename(x, f'{os.path.splitext(x)[0]}.zip')
@@ -307,7 +335,7 @@ try:
             zipname.append(os.path.splitext(x)[0])
             ZIPDragged = True
         else:
-            print(f"[!] FileWarning: The file type of {os.path.split(x)[1]} is not supported. Ignoring...")
+            print(f"[!] FileWarning: The file type of {os.path.basename(x)} is not supported. Ignoring...")
     
     if MCDragged:
         mcname.append(mctmp)
@@ -334,7 +362,7 @@ try:
         soundtmp = []
         for i in mcname[0][:]: #https://stackoverflow.com/questions/7210578
             if not convert(i, bgtmp, soundtmp):
-                print(f'[O] Converted: {os.path.split(i)[1]}')
+                print(f'[O] Converted: {os.path.basename(i)}')
                 MCValid = True
             else:
                 mcname[0].remove(i)
@@ -347,7 +375,7 @@ try:
     #Converting to .osu (dragged .mcz/.zip files)
     if ZIPDragged:
         for folder in zipname:
-            print(f'\n(i) Converting {os.path.split(folder)[1]} . . .\n')
+            print(f'\n\n(i) Converting {os.path.basename(folder)} . . .\n')
             c=0
             bgtmp = []
             soundtmp = []
@@ -356,7 +384,7 @@ try:
             for files in filelist:
                 if os.path.splitext(files)[1] == ".mc":
                     if not convert(files, bgtmp, soundtmp):
-                        print(f'[O] Converted: {os.path.split(files)[1]}')
+                        print(f'[O] Converted: {os.path.basename(files)}')
                         c+=1
                         MCValid = True
                         mctmp.append(files)
@@ -375,7 +403,7 @@ try:
     print('\n\n(i) All the supported .mc files have been converted to .osu!\n(i) Either close the program now and move the files manually,\n(i) or press Enter to compress all into .osz.')
     getch()
     
-    print('\n(i) Compressing  . . .\n')
+    print('\n\n\n(i) Compressing  . . .\n')
     #Compress to .osz (dragged .mc files as single mapset)
     if MCDragged:
         compress(f'{mcartist} - {mctitle}', mcname[0], set(bglist[0]), set(soundlist[0]))
@@ -383,8 +411,8 @@ try:
     if ZIPDragged:
         i = 1 if MCDragged else 0
         for folder in zipname:
-            print(f'\n(i) Compressing {os.path.split(folder)[1]} . . .\n')
-            compress(f'{os.path.split(folder)[1]}', mcname[i], set(bglist[i]), set(soundlist[i]))
+            print(f'\n(i) Compressing {os.path.basename(folder)} . . .\n')
+            compress(f'{os.path.basename(folder)}', mcname[i], set(bglist[i]), set(soundlist[i]))
             i+=1
             rmtree(folder)
     
@@ -399,7 +427,10 @@ except Exception as e:
     traceback.print_exc()
     crashlog = f'CrashLog_{datetime.now().strftime("%Y%m%d%H%M%S")}.log'
     with open(crashlog,mode='w',encoding='utf-8') as crash:
-        crash.write(f"Target File: {lastfile}")
+        crash.write('lol rip xd\n\n')
+        crash.write(f"Target File: {lastfile}\n")
+        crash.write("If you would like to tell the dev about this issue, please attach the file above if available (and the whole folder too if possible) with this crash report.\n")
+        crash.write('DO NOT EDIT ANYTHING WRITTEN HERE.\n\n')
         crash.write(traceback.format_exc())
     print(f'\n[X] The crash log has been saved as {crashlog}.')
     print('[X] Please tell the dev about this!')

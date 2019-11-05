@@ -2,7 +2,8 @@
 
 Converts Malody Key mode charts to osu!mania\
 Roughly coded in python by request\
-Supports all keys (4K~9K)
+Supports all keys (4K~9K)\
+**This project is discontinued and will be merged to [VSRG-Converter](https://github.com/jakads/VSRG-Converter)**
 
 ## How to Use
 
@@ -12,20 +13,29 @@ Supports all keys (4K~9K)
 
 ## Disclaimer
 
-* This program is for Windows only.
-* Expect bugs. Please report if you ever experience one!
-* All the .mc files you have dragged in will be compressed into a single mapset.
-* All the .mcz/.zip files you have dragged in will be compressed into seperate mapsets. A mapset per file.
-
-## TODO
-
-* **Support folders**
-* **Support Taiko and Catch**
-* Support custom hitsounds and SVs
-* Various color output using Colorama
-* More user-friendly GUI using Tkinter... maybe?
+* This program is tested in **Windows** only. Execution in the other OS's not guaranteed.
+* **Expect bugs.** Please report if you ever experience one!
+* All the **.mc files** you have dragged in will be compressed into a **single mapset.**
+* All the **.mcz/.zip files** you have dragged in will be compressed into **seperate mapsets.** A mapset per file.
+* In case of negative SVs, absolute value of the SV value is used for conversion.
+* Bare in mind that osu!mania can only interpret SV values between 0.01x and 10x, and any values outside the range are adjusted to 0.01x or 10x by client.\
+This might cause some unexpected and possibly disappointing consequences, such as some SV gimmicks in Malody not being converted properly to osu!mania.
 
 ## Changelog
+
+### **vFinal** (v1.4)
+
+* **Final Version, discontinued**
+* Support custom hitsounds
+* Support SVs
+  * In case of negative SVs, absolute value of the SV value is converted.
+* Source code improvements
+* Removed auto-update feature, faster loading
+* Miscellaneous visual fixes
+* Bug fixes
+  * [#10](https://github.com/jakads/Malody-to-Osumania/issues/10) - The whole tree of converted files are compressed in .osz
+  * [#11](https://github.com/jakads/Malody-to-Osumania/issues/11) - Doesn't accept .zip files
+  * [#12](https://github.com/jakads/Malody-to-Osumania/issues/12) - "Target File" is not specified in the crash reports
 
 ### v1.3.2
 
